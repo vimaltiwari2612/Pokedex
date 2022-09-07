@@ -1,0 +1,118 @@
+<html>
+
+<head>
+    <title>Pokedex</title>
+</head>
+<script>
+    getMovesCSV = (pokemonJson) => {
+        var moves = ",";
+
+
+        for (var i = 0; i < pokemonJson.moves.length; i++) {
+            var element = pokemonJson.moves[i];
+            moves += element.move.name.replace("-", " ") + ",";
+        }
+        return moves.substring(1);
+    }
+
+    populateData = (pokemonJson) => {
+        var table = document.getElementById("data");
+        //add name
+        var nameTr = document.createElement('tr');
+        var nameHeadingTd = document.createElement('td');
+        nameHeadingTd.innerHTML = 'Name';
+        var nameValueTd = document.createElement('td');
+        nameValueTd.innerHTML = pokemonJson.name;
+        nameTr.appendChild(nameHeadingTd);
+        nameTr.appendChild(nameValueTd);
+        table.appendChild(nameTr);
+
+        var movesTr = document.createElement('tr');
+        var movesHeadingTd = document.createElement('td');
+        movesHeadingTd.innerHTML = 'Moves';
+        var movesValueTd = document.createElement('td');
+        movesValueTd.innerHTML = getMovesCSV(pokemonJson);
+        movesTr.appendChild(movesHeadingTd);
+        movesTr.appendChild(movesValueTd);
+        table.appendChild(movesTr);
+    }
+
+    //main method to create the pokedex view
+    populateInformation = (pokemonJson) => {
+        var div = document.getElementById("container");
+        var imageDiv = document.getElementById("pokemonImage");
+        imageDiv.src = pokemonJson.sprites.other.home.front_default;
+        var table = document.getElementById("data");
+        table.innerHTML="";
+        populateData(pokemonJson);
+    }
+
+    //method to search the pokemon
+    search = async (item) => {
+        var searchQuery = document.getElementById("searchbox").value;
+        if (searchQuery == undefined || searchQuery == null || searchQuery.trim() == '') {
+            alert('Enter Pokemon Name!!');
+            return;
+        }
+        searchQuery = searchQuery.trim();
+        const response = await fetch('https://pokeapi.co/api/v2/pokemon/' + searchQuery);
+        if (response.status == 404) {
+            alert(searchQuery + ' Not Found!!');
+            return;
+        } else {
+            const pokemonJson = await response.json();
+            if (pokemonJson == null) {
+                alert(searchQuery + ' Not Found!!');
+                return;
+            }
+            populateInformation(pokemonJson);
+        }
+    }
+</script>
+<style>
+    .container {
+        width: 100%;
+        height: auto;
+        background: red;
+        border: 2px solid black;
+        margin: 0 auto;
+    }
+
+    .pokemonImage {
+        width: 100%;
+        height: auto;
+        background: white;
+    }
+
+    .searchBox,
+    .data,
+    .searchButton {
+        width: 100%;
+        height: auto;
+    }
+
+    .searchButton {
+        background-color: red;
+    }
+
+    h2 {
+        text-align: center;
+    }
+    table{
+        table-layout: fixed;
+        border: 1px solid;
+    }
+</style>
+
+<body>
+    <div id="container" class="container">
+        <h2>Pokedex</h2>
+        <input id="searchbox" class="searchBox" value="" placeholder="Enter Pokemon Name" />
+        <br>
+        <button class="searchButton" onclick="search(this)">Search</button>
+        <img id="pokemonImage" class="pokemonImage" />
+        <table id="data" class="data"></table>
+    </div>
+</body>
+
+</html>
